@@ -13,11 +13,15 @@ module.exports = {
     var data_from_client = req.params.all();
 
     if(req.isSocket && req.method === 'POST'){
-
       // This is the message from connected client
       // So add new conversation
-      Chat.create(data_from_client).exec(function(error, data_from_client) {
+
+      // Null id causes error
+      delete data_from_client.id;
+
+      Chat.create(data_from_client).exec(function(error, result) {
         // Message has been created
+        if(error) throw error;
       });
     }
     else {
@@ -45,7 +49,7 @@ module.exports = {
 
       // Start the liveFind
       subscribers[req.socket.id] = Chat.liveFind({},
-        function(row, newRow, rowDeleted) {
+        function(row) {
           // Optional data invalidation callback
           // Check if data is invalidated by this row change
           console.log('Row data', row);
